@@ -1,0 +1,72 @@
+import PySimpleGUI as Sg
+import csv
+import math
+
+# Theme of window
+Sg.theme('DarkTanBlue')
+# Open CSV file 'data.csv'
+with open('data.csv') as fileObject:
+    # Create DictReader Object
+    read_file = csv.DictReader(fileObject)
+    # Defining lists and variable total_profit
+    pPrices = []
+    textbook = []
+    sPrices = []
+    total_profit = 0
+    # Appending columns to lists
+    for col in read_file:
+        pPrices.append(col["Purchase price"])
+        textbook.append(col["Textbook"])
+        sPrices.append(col["Sale price"])
+
+
+def calculate_profit():  # Calculate profit function
+    # Creating profits list
+    profits = []
+    for i in range(len(sPrices)):  # Iterate through the entire list (sPrice)
+        if sPrices[i] != "NA" and pPrices[i] != "NA":  # Condition if not equal to "NA"
+            profit = float(sPrices[i]) - float(pPrices[i])  # iterate through each list
+            profits.append(round(profit, 2))  # Appending each value into profits list
+        if sPrices[i] == "NA":
+            profits.append(float(pPrices[i]) * -1)
+    return profits
+
+
+# Calling profits
+profits = calculate_profit()
+
+# Removing all str variables ("NA") from profits list
+profitList = [x for x in profits if not isinstance(x, str)]
+
+# Creating variable for sum of profitList
+total_profit = sum(profitList)
+
+# Turning lists into list tabledata
+tabledata = zip(textbook, profits, pPrices, sPrices)
+# Creating a list of a list of lists
+table = (list(tabledata))
+
+# Defining layout`
+layout = []
+
+# Creating headers for Table
+headers = ["Textbook", "Profit ($)", "Purchased ($)", "Sale Price ($)"]
+
+# Layout
+layout.append([Sg.Table(table, headings=headers, font=("Courier", 11),
+                        num_rows=min(len(textbook), 20), expand_x=True, justification="left")])
+layout.append([Sg.Text("Total Profit: ", key="totalProfit", font=("Helvetica", 12))])
+layout.append([Sg.Button("Calculate Profit", key="Calculate"), Sg.Button("Exit")])
+
+# Window
+window = Sg.Window('Task 2 GUI', layout, resizable=True, size=(1050, 450))
+
+# While loop
+while True:
+    event, values = window.read()
+    if event in (None, "Quit"):
+        break
+    if event == "Calculate":
+        window["totalProfit"].update(f"Total Profit: ${(round(total_profit, 2))}")
+    if event == "Exit":
+        window.close()
